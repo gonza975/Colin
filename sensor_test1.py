@@ -12,6 +12,9 @@ channel_B = 27  # GPIO 27
 GPIO.setup(channel_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(channel_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
+# Small delay to ensure GPIO is set up properly
+time.sleep(0.1)
+
 # Initialize variables
 position = 0  # To track the position
 last_A = GPIO.input(channel_A)
@@ -38,8 +41,12 @@ def encoder_callback(channel):
 
     print(f"Position: {position}")
 
-# Add event detection for both rising and falling edges on Channel A
-GPIO.add_event_detect(channel_A, GPIO.BOTH, callback=encoder_callback)
+# Only add edge detection to channel_A first to simplify
+try:
+    GPIO.add_event_detect(channel_A, GPIO.BOTH, callback=encoder_callback)
+except RuntimeError as e:
+    print(f"Error setting up edge detection: {e}")
+    GPIO.cleanup()
 
 # Run until interrupted
 try:
