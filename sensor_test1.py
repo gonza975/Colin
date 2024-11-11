@@ -1,58 +1,38 @@
 import RPi.GPIO as GPIO
 import time
 
-# Setup GPIO mode
-GPIO.setmode(GPIO.BCM)
-
 # Define the GPIO pins for Channel A and Channel B
 channel_A = 17  # GPIO 17
 channel_B = 27  # GPIO 27
 
-# Set up the encoder pins as input and enable internal pull-up resistors
-GPIO.setup(channel_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(channel_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+def setup_gpio():
+    """Set up GPIO pins and add edge detection."""
+    try:
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(channel_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(channel_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        time.sleep(0.1)  # Small delay to ensure GPIO is set
 
-# Small delay to ensure GPIO is set up properly
-time.sleep(0.1)
+        # Add edge detection on Channel A
+        GPIO.add_event_detect(channel_A, GPIO.BOTH, callback=encoder_callback)
+        print("Edge detection successfully added to Channel A.")
 
-# Initialize variables
-position = 0  # To track the position
-last_A = GPIO.input(channel_A)
-last_B = GPIO.input(channel_B)
+    except Exception as e:
+        print(f"Failed to add edge detection: {e}")
+        GPIO.cleanup()  # Reset GPIO to avoid leftover settings
+        raise  # Re-raise the exception after cleanup
 
-# Define the callback function for edge detection on Channel A
+# Define the callback function for edge detection
 def encoder_callback(channel):
-    global position, last_A, last_B
-    
-    # Read both channels
-    A = GPIO.input(channel_A)
-    B = GPIO.input(channel_B)
+    print("Edge detected!")  # Placeholder for actual processing logic
 
-    # Determine direction based on the state change of A and B
-    if A == last_A and B != last_B:
-        if B == 0:
-            position += 1  # Clockwise rotation
-        else:
-            position -= 1  # Counter-clockwise rotation
-
-    # Update the last state
-    last_A = A
-    last_B = B
-
-    print(f"Position: {position}")
-
-# Only add edge detection to channel_A first to simplify
+# Run the GPIO setup
 try:
-    GPIO.add_event_detect(channel_A, GPIO.BOTH, callback=encoder_callback)
-except RuntimeError as e:
-    print(f"Error setting up edge detection: {e}")
-    GPIO.cleanup()
-
-# Run until interrupted
-try:
+    setup_gpio()
+    # Main loop to keep script running
     while True:
-        time.sleep(0.01)  # Small delay to reduce CPU usage
-except KeyboardInterrupt:
-    pass
+        time.sleep(0.1)
+except Exception as e:
+    print(f"Encountered error: {e}")
 finally:
     GPIO.cleanup()
