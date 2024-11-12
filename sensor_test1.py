@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
+
 # GPIO pin setup
 channel_a = 17  # GPIO pin for channel A
 channel_b = 27  # GPIO pin for channel B
