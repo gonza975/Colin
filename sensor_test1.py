@@ -29,15 +29,16 @@ def update_position(channel):
         last_state = current_state
     print(f"Current position: {position}")
 
-# Attach the event to the channel A pin
-GPIO.add_event_detect(channel_a, GPIO.BOTH, callback=update_position)
-
 try:
+    # Attach the event to the channel A pin with a debounce time
+    GPIO.add_event_detect(channel_a, GPIO.BOTH, callback=update_position, bouncetime=50)
+
     print("Starting position tracking...")
     while True:
         time.sleep(0.1)  # Main loop can be adjusted for other tasks
 
 except KeyboardInterrupt:
     print("Exiting...")
+
 finally:
     GPIO.cleanup()
